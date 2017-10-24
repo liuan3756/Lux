@@ -6,12 +6,12 @@
 	android:layout_height="match_parent"
 	android:orientation="vertical"
 	tools:context="com.liuan.lux.lux.MainActivity">
-	<!---->
-	<!--<com.liuan.lux.lux.view.ClockView-->
-	<!--android:layout_width="match_parent"-->
-	<!--android:layout_height="match_parent"/>-->
 	
-	<com.liuan.lux.lux.view.LatinView
-		android:layout_width="match_parent"
-		android:layout_height="match_parent"/>
+	<com.liuan.lux.lux.view.ClockView
+	android:layout_width="match_parent"
+	android:layout_height="match_parent"/>
+	
+	<!--<com.liuan.lux.lux.view.LatinView-->
+		<!--android:layout_width="match_parent"-->
+		<!--android:layout_height="match_parent"/>-->
 </LinearLayout>

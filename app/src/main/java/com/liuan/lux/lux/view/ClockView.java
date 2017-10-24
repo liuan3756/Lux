@@ -12,14 +12,14 @@ public class ClockView extends View {
 	
 	private Paint paintHour;
 	private Paint paintMinute;
+	private Paint paintSecond;
 	private Paint paintBackGround;
 	private float radius;//时钟半径
 	private float centerX, centerY;//时钟圆心坐标
 	private float paintBaseWidth;//画笔基本粗细
-	private float angleLong, angleShort = 0;//长短指针
-	private boolean isKill;//控制线程结束
+	private float angleHour, angleMinute, angleSecond = 0;//长短指针
 	private float speed;//指针旋转速度
-	private Thread thread;
+	private Canvas parentCanvas;
 	
 	public ClockView(Context context) {
 		super(context);
@@ -39,10 +39,14 @@ public class ClockView extends View {
 	
 	@Override
 	protected void onDraw(Canvas canvas) {
-		drawBackGround(canvas);
-		drawHourHand(canvas);
-		drawMinuteHand(canvas);
 		super.onDraw(canvas);
+		this.parentCanvas = canvas;
+		drawBackGround();
+		drawHourHand();
+		drawMinuteHand();
+		drawSecondHand();
+		change();
+		postInvalidateDelayed(20);
 	}
 	
 	@Override
@@ -54,41 +58,31 @@ public class ClockView extends View {
 		centerX = width / 2;
 		centerY = height / 2;
 		paintBaseWidth = width / 30;
-		angleLong = 0;
+		angleMinute = 0;
 		super.onMeasure(widthMeasureSpec, heightMeasureSpec);
 	}
 	
+	private void change() {
+		angleSecond += speed;
+		if (angleSecond % 360 == 0) {
+			angleSecond = 0;
+		}
+		angleMinute += speed / 60f;
+		if (angleMinute % 360 == 0) {
+			angleMinute = 0;
+		}
+		angleHour += speed / 3600f;
+		if (angleHour % 360 == 0) {
+			angleHour = 0;
+		}
+	}
+	
 	private void init() {
-		isKill = false;
-		speed = 1.5f;
+		speed = 5f;
 		initBackGround();
 		initHourHand();
 		initMinuteHand();
-		
-		thread = new Thread();
-		new Thread(new Runnable() {//线程控制canvas旋转角度
-			@Override
-			public void run() {
-				while (!isKill) {
-					try {
-						Thread.sleep(1);
-					} catch (InterruptedException e) {
-						e.printStackTrace();
-					}
-					angleLong += speed;
-					if (angleLong % 360 == 0) {
-						angleLong = 0;
-					}
-					angleShort += speed / 5f;
-					if (angleShort % 360 == 0) {
-						angleShort = 0;
-					}
-					//Log.i("px", "" + angleLong);
-					postInvalidate();
-				}
-				
-			}
-		}).start();
+		initSecondHand();
 	}
 	
 	private void initBackGround() {
@@ -112,47 +106,48 @@ public class ClockView extends View {
 		paintMinute.setColor(Color.WHITE);
 	}
 	
-	private void drawBackGround(Canvas canvas) {
+	private void initSecondHand() {
+		paintSecond = new Paint();
+		paintSecond.setStyle(Paint.Style.FILL);
+		paintSecond.setAntiAlias(true);
+		paintSecond.setColor(Color.RED);
+	}
+	
+	private void drawBackGround() {
 		paintBackGround.setStrokeWidth(paintBaseWidth * 2);
-		canvas.drawCircle(centerX, centerY, radius, paintBackGround);
+		parentCanvas.drawCircle(centerX, centerY, radius, paintBackGround);
 	}
 	
-	private void drawHourHand(Canvas canvas) {
+	private void drawHourHand() {
 		if (paintHour.getStrokeWidth() == 0f) {
-			paintHour.setStrokeWidth(paintBaseWidth * 3);
+			paintHour.setStrokeWidth(paintBaseWidth * 2f);
 		}
-		canvas.drawCircle(centerX, centerY, paintBaseWidth * 1.5f, paintHour);
-		canvas.rotate(angleShort, centerX, centerY);
-		
-		canvas.drawLine(centerX, centerY, centerX, centerY - radius / 3, paintHour);
-		canvas.drawCircle(centerX, centerY - radius / 3, paintBaseWidth * 1.5f, paintHour);
+		drawHand(angleHour, centerY - radius * 0.4f, paintHour);
 	}
 	
-	private void drawMinuteHand(Canvas canvas) {
+	private void drawMinuteHand() {
 		if (paintMinute.getStrokeWidth() == 0f) {
-			paintMinute.setStrokeWidth(paintBaseWidth * 2);
+			paintMinute.setStrokeWidth(paintBaseWidth * 1.5f);
 		}
-		canvas.drawCircle(centerX, centerY, paintBaseWidth, paintMinute);
-		canvas.rotate(angleLong, centerX, centerY);
-		canvas.drawLine(centerX, centerY, centerX, centerY - radius / 2, paintMinute);
-		canvas.drawCircle(centerX, centerY - radius / 2, paintBaseWidth, paintMinute);
+		drawHand(angleMinute, centerY - radius * 0.7f, paintMinute);
 	}
 	
+	private void drawSecondHand() {
+		if (paintSecond.getStrokeWidth() == 0f) {
+			paintSecond.setStrokeWidth(paintBaseWidth * 0.5f);
+		}
+		drawHand(angleSecond, centerY - radius * 0.9f, paintSecond);
+	}
 	
-	public void killThread() {//结束线程
-		isKill = true;
+	private void drawHand(float angleRotate, float endY, Paint handPaint) {
+		parentCanvas.drawCircle(centerX, centerY, handPaint.getStrokeWidth() / 2, handPaint);
+		parentCanvas.rotate(angleRotate, centerX, centerY);
+		parentCanvas.drawLine(centerX, centerY, centerX, endY, handPaint);
+		parentCanvas.drawCircle(centerX, endY, handPaint.getStrokeWidth() / 2, handPaint);
 	}
 	
 	public void setSpeed(int speed) {//对外开放设置时针速度接口
 		this.speed = speed;
 	}
-	
-	class InvalidateThread extends Thread {
-		@Override
-		public void run() {
-			super.run();
-		}
-	}
-	
 	
 }
