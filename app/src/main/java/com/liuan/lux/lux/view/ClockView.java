@@ -6,9 +6,20 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.View;
 
+import java.util.Calendar;
+
 public class ClockView extends View {
+	
+	public static final float DEFAULT_HOUR_SPEED = 10f;
+	public static final float DEFAULT_MINUTE_SPEED = 14f;
+	public static final float DEFAULT_SECOND_SPEED = 50f;
+	public static final long DEFAULT_INVALIDATE_DELAYED = 30;
+	private boolean needHourHand;
+	private boolean needMinuteHand;
+	private boolean needSecondHand;
 	
 	private Paint paintHour;
 	private Paint paintMinute;
@@ -18,8 +29,10 @@ public class ClockView extends View {
 	private float centerX, centerY;//时钟圆心坐标
 	private float paintBaseWidth;//画笔基本粗细
 	private float angleHour, angleMinute, angleSecond = 0;//长短指针
-	private float speed;//指针旋转速度
+	private long invalidateDelayed = 0;
+	private float speedHour, speedMinute, speedSecond;//指针旋转速度
 	private Canvas parentCanvas;
+	private boolean asAClock;
 	
 	public ClockView(Context context) {
 		super(context);
@@ -45,8 +58,7 @@ public class ClockView extends View {
 		drawHourHand();
 		drawMinuteHand();
 		drawSecondHand();
-		change();
-		postInvalidateDelayed(20);
+		postInvalidateDelayed(invalidateDelayed);
 	}
 	
 	@Override
@@ -59,26 +71,19 @@ public class ClockView extends View {
 		centerY = height / 2;
 		paintBaseWidth = width / 30;
 		angleMinute = 0;
+		angleHour = 0;
+		angleSecond = 0;
 		super.onMeasure(widthMeasureSpec, heightMeasureSpec);
 	}
 	
-	private void change() {
-		angleSecond += speed;
-		if (angleSecond % 360 == 0) {
-			angleSecond = 0;
-		}
-		angleMinute += speed / 60f;
-		if (angleMinute % 360 == 0) {
-			angleMinute = 0;
-		}
-		angleHour += speed / 3600f;
-		if (angleHour % 360 == 0) {
-			angleHour = 0;
-		}
-	}
-	
 	private void init() {
-		speed = 5f;
+		speedHour = DEFAULT_HOUR_SPEED;
+		speedMinute = DEFAULT_MINUTE_SPEED;
+		speedSecond = DEFAULT_SECOND_SPEED;
+		invalidateDelayed = DEFAULT_INVALIDATE_DELAYED;
+		needHourHand = true;
+		needMinuteHand = true;
+		needSecondHand = false;
 		initBackGround();
 		initHourHand();
 		initMinuteHand();
@@ -89,14 +94,14 @@ public class ClockView extends View {
 		paintBackGround = new Paint();
 		paintBackGround.setStyle(Paint.Style.FILL);
 		paintBackGround.setAntiAlias(true);
-		paintBackGround.setColor(Color.BLACK);
+		paintBackGround.setColor(Color.parseColor("#3385FF"));
 	}
 	
 	private void initHourHand() {
 		paintHour = new Paint();
 		paintHour.setStyle(Paint.Style.FILL);
 		paintHour.setAntiAlias(true);
-		paintHour.setColor(Color.GRAY);
+		paintHour.setColor(Color.WHITE);
 	}
 	
 	private void initMinuteHand() {
@@ -114,40 +119,84 @@ public class ClockView extends View {
 	}
 	
 	private void drawBackGround() {
-		paintBackGround.setStrokeWidth(paintBaseWidth * 2);
 		parentCanvas.drawCircle(centerX, centerY, radius, paintBackGround);
 	}
 	
 	private void drawHourHand() {
-		if (paintHour.getStrokeWidth() == 0f) {
-			paintHour.setStrokeWidth(paintBaseWidth * 2f);
+		if (!needHourHand) return;
+		angleHour += speedHour;
+		if (angleHour % 360 == 0) {
+			angleHour = 0;
 		}
-		drawHand(angleHour, centerY - radius * 0.4f, paintHour);
+		if (paintHour.getStrokeWidth() == 0f) {
+			paintHour.setStrokeWidth(paintBaseWidth * 4f);
+		}
+		drawHand(angleHour, radius * 0.4f, paintHour);
 	}
 	
 	private void drawMinuteHand() {
-		if (paintMinute.getStrokeWidth() == 0f) {
-			paintMinute.setStrokeWidth(paintBaseWidth * 1.5f);
+		if (!needMinuteHand) return;
+		angleMinute += speedMinute;
+		if (angleMinute % 360 == 0) {
+			angleMinute = 0;
 		}
-		drawHand(angleMinute, centerY - radius * 0.7f, paintMinute);
+		if (paintMinute.getStrokeWidth() == 0f) {
+			paintMinute.setStrokeWidth(paintBaseWidth * 4f);
+		}
+		drawHand(angleMinute, radius * 0.7f, paintMinute);
 	}
 	
 	private void drawSecondHand() {
-		if (paintSecond.getStrokeWidth() == 0f) {
-			paintSecond.setStrokeWidth(paintBaseWidth * 0.5f);
+		if (!needSecondHand) return;
+		angleSecond += speedSecond;
+		if (angleSecond % 360 == 0) {
+			angleSecond = 0;
 		}
-		drawHand(angleSecond, centerY - radius * 0.9f, paintSecond);
+		if (paintSecond.getStrokeWidth() == 0f) {
+			paintSecond.setStrokeWidth(paintBaseWidth * 1f);
+		}
+		drawHand(angleSecond, radius * 0.9f, paintSecond);
 	}
 	
-	private void drawHand(float angleRotate, float endY, Paint handPaint) {
+	private void drawHand(float angleRotate, float handLength, Paint handPaint) {
 		parentCanvas.drawCircle(centerX, centerY, handPaint.getStrokeWidth() / 2, handPaint);
 		parentCanvas.rotate(angleRotate, centerX, centerY);
-		parentCanvas.drawLine(centerX, centerY, centerX, endY, handPaint);
-		parentCanvas.drawCircle(centerX, endY, handPaint.getStrokeWidth() / 2, handPaint);
+		parentCanvas.drawLine(centerX, centerY, centerX, centerY - handLength, handPaint);
+		parentCanvas.drawCircle(centerX, centerY - handLength, handPaint.getStrokeWidth() / 2, handPaint);
 	}
 	
-	public void setSpeed(int speed) {//对外开放设置时针速度接口
-		this.speed = speed;
+	public void setHourHandVisible(boolean hourHandVisible) {
+		this.needHourHand = hourHandVisible;
+	}
+	
+	public void setMinuteHandVisible(boolean minuteHandVisible) {
+		this.needMinuteHand = minuteHandVisible;
+	}
+	
+	public void setSecondHandVisible(boolean secondHandVisible) {
+		this.needSecondHand = secondHandVisible;
+	}
+	
+	public void asAClock() {
+		asAClock = true;
+		needSecondHand = true;
+		invalidateDelayed = 1000;
+		speedSecond = 6f;
+		speedMinute = speedSecond / 60;
+		speedHour = speedMinute / 60;
+		Calendar calendar = Calendar.getInstance();
+		float hour = calendar.get(Calendar.HOUR);
+		float minute = calendar.get(Calendar.MINUTE);
+		float second = calendar.get(Calendar.SECOND);
+		Log.d("@@@@", "hour " + hour);
+		Log.d("@@@@", "minute " + minute);
+		Log.d("@@@@", "second " + second);
+		angleHour = 360f * (hour / 12f);
+		angleMinute = angleHour - 360f * (minute / 60f);
+		angleSecond = angleHour - angleMinute - 360f * (second / 60f);
+		Log.d("@@@@", "angleHour " + angleHour);
+		Log.d("@@@@", "angleMinute " + angleMinute);
+		Log.d("@@@@", "angleSecond " + angleSecond);
 	}
 	
 }

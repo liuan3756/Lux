@@ -4,14 +4,16 @@
 	xmlns:tools="http://schemas.android.com/tools"
 	android:layout_width="match_parent"
 	android:layout_height="match_parent"
+	android:gravity="center"
 	android:orientation="vertical"
 	tools:context="com.liuan.lux.lux.MainActivity">
 	
 	<com.liuan.lux.lux.view.ClockView
-	android:layout_width="match_parent"
-	android:layout_height="match_parent"/>
+		android:id="@+id/cv"
+		android:layout_width="100dp"
+		android:layout_height="100dp"/>
 	
 	<!--<com.liuan.lux.lux.view.LatinView-->
-		<!--android:layout_width="match_parent"-->
-		<!--android:layout_height="match_parent"/>-->
+	<!--android:layout_width="match_parent"-->
+	<!--android:layout_height="match_parent"/>-->
 </LinearLayout>
