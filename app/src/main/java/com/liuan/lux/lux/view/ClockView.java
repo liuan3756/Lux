@@ -17,6 +17,7 @@ public class ClockView extends View {
 	public static final float DEFAULT_MINUTE_SPEED = 14f;
 	public static final float DEFAULT_SECOND_SPEED = 50f;
 	public static final long DEFAULT_INVALIDATE_DELAYED = 30;
+	public static final float DEFAULT_HOUR_WIDTH = 1.4f;
 	private boolean needHourHand;
 	private boolean needMinuteHand;
 	private boolean needSecondHand;
@@ -129,7 +130,7 @@ public class ClockView extends View {
 			angleHour = 0;
 		}
 		if (paintHour.getStrokeWidth() == 0f) {
-			paintHour.setStrokeWidth(paintBaseWidth * 4f);
+			paintHour.setStrokeWidth(paintBaseWidth * 1.4f);
 		}
 		drawHand(angleHour, radius * 0.4f, paintHour);
 	}
@@ -141,7 +142,7 @@ public class ClockView extends View {
 			angleMinute = 0;
 		}
 		if (paintMinute.getStrokeWidth() == 0f) {
-			paintMinute.setStrokeWidth(paintBaseWidth * 4f);
+			paintMinute.setStrokeWidth(paintBaseWidth * 1.4f);
 		}
 		drawHand(angleMinute, radius * 0.7f, paintMinute);
 	}
