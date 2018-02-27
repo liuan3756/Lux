@@ -2,7 +2,8 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/Lux.iml" filepath="$PROJECT_DIR$/Lux.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/Lux.iml" filepath="$PROJECT_DIR$/.idea/Lux.iml" />
+      <module fileurl="file://E:\AndroidCode\Lux\Lux.iml" filepath="E:\AndroidCode\Lux\Lux.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
     </modules>
   </component>
